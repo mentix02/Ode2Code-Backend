@@ -121,7 +121,8 @@ class Command(BaseCommand):
                             'host': '127.0.0.1',
                         }
 
-                        default = True if input('  Default configuration (127.0.0.1:8000) [Y/n] : ').lower() == 'y' else False
+                        default = True if input('  Default configuration (127.0.0.1:8000) [Y/n] : ').lower() == 'y' \
+                            else False
 
                         if not default:
                             server_configurations['host'] = input('Enter host : ')
