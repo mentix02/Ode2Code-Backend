@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # local
+    'core.apps.CoreConfig',
     'blog.apps.BlogConfig',
     'author.apps.AuthorConfig',
     'tutorial.apps.TutorialConfig',
@@ -65,10 +66,10 @@ DATABASES = {
     'default': {
         'HOST': '',
         'PORT': '',
-        'USER': 'manan',
         'NAME': 'ode2code',
-        'PASSWORD': 'toor',
+        'USER': decouple.config('DB_USER'),
         'ENGINE': 'django.db.backends.mysql',
+        'PASSWORD': decouple.config('DB_PASSWORD'),
     }
 }
 
@@ -100,7 +101,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
-# third party configuration
+# third party package configuration
 
 CORS_ORIGIN_ALLOW_ALL = True
 
