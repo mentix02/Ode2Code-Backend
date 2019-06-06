@@ -6,6 +6,7 @@ import getpass
 # noinspection PyProtectedMember
 from pip._internal import main as pipmain
 
+from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 
 
@@ -31,7 +32,7 @@ class Command(BaseCommand):
 
             # install packages
             packages = open('requirements.txt').readlines()
-            install_packages(packages)
+            install_packages(packages + ['mysql-connector'])
 
             # add settings to .env
             file = open('.env', 'w+')
@@ -49,6 +50,47 @@ class Command(BaseCommand):
 
             file.write(env_formatter('DB_USER', db_name))
             file.write(env_formatter('DB_PASSWORD', db_password))
+
+            # configure MySQL database
+
+            try:
+
+                import mysql.connector
+
+                mydb = mysql.connector.connect(
+                    host='localhost',
+                    user=db_name,
+                    passwd=db_password
+                )
+
+                mycursor = mydb.cursor()
+
+                try:
+                    # test if database 'ode2code' exists
+                    mysql.connector.connect(
+                        host='localhost',
+                        user=db_name,
+                        passwd=db_password,
+                        database='ode2code'
+                    )
+                except mysql.connector.errors.ProgrammingError:
+                    # if doesnt', create it
+                    mycursor.execute('CREATE DATABASE ode2code')
+                else:
+                    # if does, delete existing and create new
+                    mycursor.execute('DROP DATABASE ode2code')
+                    mycursor.execute('CREATE DATABASE ode2code')
+
+                # make migrations and migrate app
+
+                print('Created database. Running migrations...', end=' ')
+                call_command('makemigrations', interactive=False)
+                print('done\nMigrating...', end=' ')
+                call_command('migrate', interactive=False)
+                print('done')
+
+            except Exception as e:
+                raise CommandError(str(e))
 
             file.close()
 
