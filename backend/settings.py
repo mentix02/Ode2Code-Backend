@@ -5,7 +5,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = decouple.config('SECRET_KEY')
 
-DEBUG = decouple.config('DEBUG', cast=bool)
+try:
+    DEBUG = decouple.config('DEBUG', cast=bool)
+except decouple.UndefinedValueError:
+    DEBUG = True
 
 INTERNAL_IPS = ('127.0.0.1',)
 
@@ -62,14 +65,21 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
+try:
+    USER = decouple.config('DB_USER')
+    PASSWORD = decouple.config('DB_PASSWORD')
+except decouple.UndefinedValueError:
+    USER = 'mansan'
+    PASSWORD = 'toosr'
+
 DATABASES = {
     'default': {
         'HOST': '',
         'PORT': '',
         'NAME': 'ode2code',
-        'USER': decouple.config('DB_USER'),
+        'USER': USER,
         'ENGINE': 'django.db.backends.mysql',
-        'PASSWORD': decouple.config('DB_PASSWORD'),
+        'PASSWORD': PASSWORD,
     }
 }
 
