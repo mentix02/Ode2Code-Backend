@@ -50,5 +50,7 @@ class Command(BaseCommand):
             file.write(env_formatter('DB_USER', db_name))
             file.write(env_formatter('DB_PASSWORD', db_password))
 
+            file.close()
+
         except Exception as e:
             raise CommandError(str(e))
