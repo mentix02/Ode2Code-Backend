@@ -23,7 +23,7 @@ class Command(BaseCommand):
 
         try:
 
-            posts = Post.objects.all()
+            posts = Post.objects.order_by('pk')
 
             for index in range(options['number']):
 
@@ -35,9 +35,9 @@ class Command(BaseCommand):
                                post.draft,
                                f'{post.description[:10]}...',
                                f'{post.thumbnail[-3:]}',
-                               post.slug,
-                               post.timestamp,
+                               post.timestamp.ctime(),
                                post.uuid.__str__()[-12:],
+                               post.slug,
                                post.author])
 
             print(table)
