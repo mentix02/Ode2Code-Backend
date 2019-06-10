@@ -114,7 +114,7 @@ class Command(BaseCommand):
 
                 if create_super_user:
 
-                    u = User.objects.create_superuser(
+                    u: User = User.objects.create_superuser(
                         username=input('  Enter username         : '),
                         email=input('  Enter email            : '),
                         password=getpass.getpass('  Enter password         : ')
@@ -128,6 +128,7 @@ class Command(BaseCommand):
 
                     Author.objects.create(
                         user_id=u.id,
+                        authenticated=True,
                         bio=input('  Enter bio              : ')
                     ).save()
 
@@ -149,9 +150,7 @@ class Command(BaseCommand):
                         if not default:
                             server_configurations['host'] = input('  Enter host : ')
                             server_configurations['port'] = input('  Enter port : ')
-    
-                        application = get_wsgi_application()
-    
+
                         execute_from_command_line(['name', 'runserver', 
                                                  f'{server_configurations["host"]}:{server_configurations["port"]}'])
     
