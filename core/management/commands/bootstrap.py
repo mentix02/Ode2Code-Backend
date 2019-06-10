@@ -1,6 +1,7 @@
 import typing
 import random
 import getpass
+import decouple
 
 # noinspection PyProtectedMember
 from pip._internal import main as pipmain
@@ -37,31 +38,27 @@ class Command(BaseCommand):
         try:
 
             # install packages
-            print('\n=================================== Installing Packages ===================================\n')
+            print('\n=================================== INSTALLING PACKAGES ===================================\n')
             packages = open('requirements.txt').readlines()
             install_packages(packages + ['mysql-connector'])
 
             # add settings to .env
-            file = open('.env', 'w+')
+            file = open('.env', 'a')
 
-            print('\n=================================== Secrets Configuration ===================================\n')
-
-            # set random secret key
-            chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
-            file.write(env_formatter('SECRET_KEY', ''.join([random.SystemRandom().choice(chars) for _ in range(50)])))
+            print('\n==================================== SECRET CONFIGURATION ====================================\n')
 
             # set debug mode; probably should be True be default
             debug = 'False' if input('Debug mode on [Y/n]      : ').lower() == 'n' else 'True'
             file.write(env_formatter('DEBUG', debug))
 
-            print("\n=================================== Database Configuration ===================================\n")
+            print("\n=================================== DATABASE CONFIGURATION  ===================================\n")
 
             # configure MySQL settings
-            db_name = input('Database user name       : ')
-            db_password = getpass.getpass(prompt='Database user password   : ')
+            db_name = decouple.config('DB_USER')
+            db_password = decouple.config('DB_PASSWORD')
 
-            file.write(env_formatter('DB_USER', db_name))
-            file.write(env_formatter('DB_PASSWORD', db_password))
+            # input('Database user name       : ')
+            # getpass.getpass(prompt='Database user password   : ')
 
             # configure MySQL database
 
@@ -143,8 +140,15 @@ class Command(BaseCommand):
                         email=input('  Enter email            : '),
                         password=getpass.getpass('  Enter password         : ')
                     )
+                    first_name = input('  Enter first name       : '),
+                    last_name = input('  Enter last name        : '),
+
+                    u.first_name = first_name
+                    u.last_name = last_name
+                    u.save()
+
                     Author.objects.create(
-                        user=u,
+                        user_id=u.id,
                         bio=input('  Enter bio              : ')
                     ).save()
 

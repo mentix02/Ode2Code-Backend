@@ -3,7 +3,11 @@ import decouple
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-SECRET_KEY = decouple.config('SECRET_KEY')
+try:
+    SECRET_KEY = decouple.config('SECRET_KEY')
+except decouple.UndefinedValueError:
+    print("SECRET_KEY not configured. Run `make` for configure settings.")
+    exit(1)
 
 try:
     DEBUG = decouple.config('DEBUG', cast=bool)
