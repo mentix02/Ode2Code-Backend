@@ -1,11 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # get vars
 PIP=$(which pip)
 PYTHON=$(which python3)
 
 # install django
-$PIP install -r requirements.txt
+${PIP} install -r requirements.txt
 
 # write to an .env file
 function django_secret() { python -c "import random,string;print(''.join([random.SystemRandom().choice(\"{}{}{}\".format(string.ascii_letters, string.digits, string.punctuation)) for i in range(63)]).replace('\\'','\\'\"\\'\"\\''))"; }
@@ -22,4 +22,4 @@ echo "DB_USER=$db_user" >> ".env"
 echo "DB_PASSWORD=$db_password" >> ".env"
 
 # run bootstrap command
-$PYTHON manage.py bootstrap
+${PYTHON} manage.py bootstrap
