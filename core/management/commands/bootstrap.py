@@ -8,6 +8,8 @@ from pip._internal import main as pipmain
 
 from django.contrib.auth.models import User
 from django.core.management import call_command
+from django.core.wsgi import get_wsgi_application
+from django.core.management import execute_from_command_line
 from django.core.management.base import BaseCommand, CommandError
 
 from author.models import Author
@@ -48,7 +50,7 @@ class Command(BaseCommand):
             print('\n==================================== SECRET CONFIGURATION ====================================\n')
 
             # set debug mode; probably should be True be default
-            debug = 'False' if input('Debug mode on [Y/n]      : ').lower() == 'n' else 'True'
+            debug = 'False' if input('  Debug mode on [Y/n]      : ').lower() == 'n' else 'True'
             file.write(env_formatter('DEBUG', debug))
 
             print("\n=================================== DATABASE CONFIGURATION  ===================================\n")
@@ -85,15 +87,14 @@ class Command(BaseCommand):
 
                 except mysql.connector.errors.ProgrammingError:
                     # if doesnt', create it
-                    print('Creating new database "ode2code"...', end=' ')
+                    print('  Creating new database "ode2code"...', end=' ')
                     mycursor.execute('CREATE DATABASE ode2code')
                     print('done.')
                 else:
                     # if does, delete existing and create new
-
-                    print('\nFound existing database "ode2code". Deleting...', end=' ')
+                    print('\n  Found existing database "ode2code". Deleting...', end=' ')
                     mycursor.execute('DROP DATABASE ode2code')
-                    print('done.\nCreating new database "ode2code"...', end=' ')
+                    print('done.\n  Creating new database "ode2code"...', end=' ')
                     mycursor.execute('CREATE DATABASE ode2code')
                     print('done. Populating fields...')
 
@@ -103,31 +104,9 @@ class Command(BaseCommand):
                 call_command('makemigrations', interactive=False)
                 print('\nMade migrations. Migrating...\n')
                 call_command('migrate', interactive=False)
-                print('\n  Finished. You\'re good to go!')
+                print('\n  Finished database setup. You\'re good to go!')
 
                 server = False
-
-                if server:
-
-                    print('\n================================== Start Server ==================================\n')
-
-                    start_server = True if input('  Start development server [Y/n] : ').lower() == 'y' else False
-
-                    if start_server:
-
-                        server_configurations = {
-                            'port': '8000',
-                            'host': '127.0.0.1',
-                        }
-
-                        default = True if input('  Default configuration (127.0.0.1:8000) [Y/n] : ').lower() == 'y' \
-                            else False
-
-                        if not default:
-                            server_configurations['host'] = input('Enter host : ')
-                            server_configurations['port'] = input('Enter port : ')
-
-                        runserver(server_configurations)
 
                 print('\n================================== CREATE SUPERUSER ==================================\n')
 
@@ -152,6 +131,30 @@ class Command(BaseCommand):
                         bio=input('  Enter bio              : ')
                     ).save()
 
+                if server:
+
+                    print('\n=================================== Start Server ===================================\n')
+                    start_server = True if input('  Start development server [Y/n] : ').lower() == 'y' else False
+    
+                    if start_server:
+    
+                        server_configurations = {
+                            'port': '8000',
+                            'host': '127.0.0.1',
+                        }
+    
+                        default = True if input('  Default configuration (127.0.0.1:8000) [Y/n] : ').lower() == 'y' \
+                            else False
+    
+                        if not default:
+                            server_configurations['host'] = input('  Enter host : ')
+                            server_configurations['port'] = input('  Enter port : ')
+    
+                        application = get_wsgi_application()
+    
+                        execute_from_command_line(['name', 'runserver', 
+                                                 f'{server_configurations["host"]}:{server_configurations["port"]}'])
+    
                 print('\n====================================== FINISHED ======================================\n')
 
             except Exception as e:
