@@ -10,7 +10,9 @@ table.field_names = [
     'username',
     'first_name',
     'last_name',
+    'bio',
     'is_staff',
+    'authenticated'
 ]
 
 
@@ -39,7 +41,9 @@ class Command(BaseCommand):
                     user.username,
                     user.first_name,
                     user.last_name,
-                    user.is_staff
+                    user.author.bio,
+                    user.is_staff,
+                    user.author.authenticated
                 ])
 
             print(table)

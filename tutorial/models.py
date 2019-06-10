@@ -27,6 +27,9 @@ class Series(models.Model):
     creator = models.ForeignKey(Author, on_delete=models.CASCADE)
     slug = models.SlugField(max_length=200, blank=True, unique=True)
 
+    def get_tutorials(self):
+        return self.tutorials.all()
+
     def __str__(self):
         return self.name
 

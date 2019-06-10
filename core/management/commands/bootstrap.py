@@ -9,6 +9,8 @@ from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 
+from author.models import Author
+
 
 def env_formatter(key: str, value: str) -> str:
     return f'{key.upper()}={value}\n'
@@ -136,11 +138,15 @@ class Command(BaseCommand):
 
                 if create_super_user:
 
-                    User.objects.create_superuser(
+                    u = User.objects.create_superuser(
                         username=input('  Enter username         : '),
                         email=input('  Enter email            : '),
                         password=getpass.getpass('  Enter password         : ')
                     )
+                    Author.objects.create(
+                        user=u,
+                        bio=input('  Enter bio              : ')
+                    ).save()
 
                 print('\n====================================== FINISHED ======================================\n')
 
