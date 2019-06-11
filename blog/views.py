@@ -13,9 +13,6 @@ TODO write a view listing blog posts for authenticated
      authentication will have to be covered much later.
 
 """
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
-
 from rest_framework.permissions import AllowAny
 from rest_framework.generics import (
     ListAPIView,
@@ -34,10 +31,6 @@ class PostListAPIView(ListAPIView):
     Lists all posts that aren't drafted True
     in JSON format with AllowAny permissions.
     """
-
-    @method_decorator(cache_page(60 * 5, key_prefix='PostListAPIView'))
-    def dispatch(self, *args, **kwargs):
-        return super(PostListAPIView, self).dispatch(*args, **kwargs)
 
     permission_classes = (AllowAny,)
     serializer_class = PostListSerializer
