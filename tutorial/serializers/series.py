@@ -27,6 +27,7 @@ class SeriesDetailSerializer(ModelSerializer):
     tutorial_count = IntegerField(source='get_tutorial_count')
     tutorials = HyperlinkedIdentityField(many=True,
                                          lookup_field='slug',
+                                         source='get_tutorials',
                                          lookup_url_kwarg='slug',
                                          view_name='api-tutorial-detail')
 
