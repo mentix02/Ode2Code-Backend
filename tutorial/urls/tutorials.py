@@ -7,5 +7,5 @@ from tutorial.views.tutorials import (
 
 urlpatterns = (
     path('recent/', RecentTutorialAPIView.as_view()),
-    path('detail/<slug:slug>/', TutorialDetailAPIView.as_view()),
+    path('detail/<slug:slug>/', TutorialDetailAPIView.as_view(), name='api-tutorial-detail'),
 )
