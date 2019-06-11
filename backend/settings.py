@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'author.apps.AuthorConfig',
     'tutorial.apps.TutorialConfig',
     # third party
+    'vote',
     'corsheaders',
     'debug_toolbar',
     'rest_framework',
@@ -73,15 +74,15 @@ try:
     USER = decouple.config('DB_USER')
     PASSWORD = decouple.config('DB_PASSWORD')
 except decouple.UndefinedValueError:
-    USER = 'mansan'
-    PASSWORD = 'toosr'
+    USER = ''
+    PASSWORD = ''
 
 DATABASES = {
     'default': {
         'HOST': '',
         'PORT': '',
-        'NAME': 'ode2code',
         'USER': USER,
+        'NAME': 'ode2code',
         'ENGINE': 'django.db.backends.mysql',
         'PASSWORD': PASSWORD,
     }
