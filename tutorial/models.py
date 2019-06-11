@@ -28,7 +28,10 @@ class Series(models.Model):
     slug = models.SlugField(max_length=200, blank=True, unique=True)
 
     def get_tutorials(self):
-        return self.tutorials.all()
+        return self.tutorials.filter(draft=False)
+
+    def get_tutorial_count(self):
+        return self.tutorials.filter(draft=False).count()
 
     def __str__(self):
         return self.name
