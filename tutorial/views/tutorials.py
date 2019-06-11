@@ -1,6 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import (
+    ListAPIView,
+    RetrieveAPIView
+)
 
 from tutorial.models import Tutorial
 from tutorial.serializers import (
@@ -20,7 +23,8 @@ class RecentTutorialAPIView(APIView):
         return Response(data)
 
 
-class TutorialDetailAPIView(ListAPIView):
-
-    serializer_class = TutorialListSerializer
+class TutorialDetailAPIView(RetrieveAPIView):
+    lookup_field = 'slug'
+    lookup_url_kwarg = 'slug'
+    serializer_class = TutorialDetailSerializer
     queryset = Tutorial.objects.filter(draft=False)
