@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate
 from django.shortcuts import get_list_or_404
+from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView, Response
@@ -18,6 +19,9 @@ from tutorial.serializers import (
     SeriesListSerializer,
     TutorialListSerializer
 )
+
+
+UP, DOWN = 1, 0
 
 
 class GetTokenAndAuthorDetailsAPIView(APIView):
@@ -108,3 +112,35 @@ class AuthorSeriesListAPIView(ListAPIView):
         username = self.kwargs['username']
         queryset = get_list_or_404(Series, creator__user__username=username)
         return queryset
+
+
+class AuthorLikedTutorialIdsAPIView(APIView):
+    """
+    Returns a list of ids of tutorials liked by the user.
+    Required an authtoken to verify only the user can view
+    his / her liked tutorials. No justification found yet.
+    """
+
+    @staticmethod
+    def post(request):
+
+        token = request.POST.get('token')
+
+        if not token:
+            return Response({
+                'error': 'Unauthorized to view response.'
+            }, status=401)
+
+        try:
+
+            user_id = Token.objects.get(key=token).user_id
+            tutorials = Tutorial.votes.all(user_id)
+
+            return Response([
+                tutorial.pk for tutorial in tutorials
+            ])
+
+        except ObjectDoesNotExist:
+            return Response({
+                'error': 'Invalid auth token provided.'
+            }, status=401)
