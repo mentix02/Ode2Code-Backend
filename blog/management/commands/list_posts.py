@@ -7,6 +7,8 @@ from prettytable import PrettyTable
 
 table = PrettyTable()
 table.field_names = [p.name for p in Post._meta.get_fields()]
+for field in ['vote_score', 'votes', 'num_vote_up', 'num_vote_down']:
+    table.field_names.remove(field)
 
 
 class Command(BaseCommand):
@@ -31,7 +33,7 @@ class Command(BaseCommand):
 
                 table.add_row([post.id,
                                f'{post.body[:10]}...',
-                               post.title,  # f'{post.title[:10]}...',
+                               f'{post.title[:20]}...',
                                post.draft,
                                f'{post.description[:10]}...',
                                f'{post.thumbnail[-3:]}',

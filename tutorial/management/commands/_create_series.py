@@ -5,6 +5,8 @@ import random
 from author.models import Author
 from tutorial.models import Series
 
+PHOTO_IDS = list({'741', '566', '973', '849', '885'})
+
 AUTHOR_IDS = sorted([author_id[0] for author_id in Author.objects.values_list('id')])
 
 CHOICES: typing.List[typing.Tuple[str, str]] = [
@@ -29,7 +31,8 @@ def create_series(n: int = 1):
             description=fake.text(150),
             name=fake.text(50).title()[:-1],
             type_of=random.choice(CHOICES)[0],
-            creator_id=random.choice(AUTHOR_IDS)
+            creator_id=random.choice(AUTHOR_IDS),
+            thumbnail=f'https://picsum.photos/1900/1080/?image={random.choice(PHOTO_IDS)}',
         )
 
     print(f'Populating {n} series... done')

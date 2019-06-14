@@ -1,5 +1,7 @@
 import uuid
 
+from vote.models import VoteModel
+
 from django.db import models
 from django.dispatch import receiver
 from django.utils.text import slugify
@@ -8,7 +10,7 @@ from django.db.models.signals import pre_save
 from author.models import Author
 
 
-class Post(models.Model):
+class Post(VoteModel, models.Model):
 
     body = models.TextField()
     title = models.CharField(max_length=100)
