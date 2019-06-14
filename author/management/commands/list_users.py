@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
 
+from rest_framework.authtoken.models import Token
+
 from prettytable import PrettyTable
 
 
@@ -12,7 +14,8 @@ table.field_names = [
     'last_name',
     'bio',
     'is_staff',
-    'authenticated'
+    'authenticated',
+    'token',
 ]
 
 
@@ -43,7 +46,8 @@ class Command(BaseCommand):
                     user.last_name,
                     user.author.bio,
                     user.is_staff,
-                    user.author.authenticated
+                    user.author.authenticated,
+                    Token.objects.get(user_id__exact=user.id).key
                 ])
 
             print(table)
