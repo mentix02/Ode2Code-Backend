@@ -119,8 +119,8 @@ class Command(BaseCommand):
                         email=input('  Enter email            : '),
                         password=getpass.getpass('  Enter password         : ')
                     )
-                    first_name = input('  Enter first name       : '),
-                    last_name = input('  Enter last name        : '),
+                    first_name = input('  Enter first name       : ')
+                    last_name = input('  Enter last name        : ')
 
                     u.first_name = first_name
                     u.last_name = last_name
