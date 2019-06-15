@@ -3,6 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.generics import (
     ListAPIView,
     RetrieveAPIView
@@ -19,8 +20,7 @@ class RecentTutorialAPIView(APIView):
 
     @staticmethod
     def get(request):
-
-        query = Tutorial.objects.filter(draft=False).order_by('-pk')[:10]
+        query = Tutorial.objects.filter(draft=False).order_by('-pk')[:12]
         data = TutorialListSerializer(query, many=True).data
 
         return Response(data)
@@ -36,8 +36,16 @@ class TutorialDetailAPIView(RetrieveAPIView):
 class TutorialLikeUnlikeAPIView(APIView):
     """
     Likes a tutorial by an authenticated user if
-    no existing like is found else removes the like.
+    no existing like is found or else removes the like.
     """
+
+    parser_classes = (FormParser, MultiPartParser)
+
+    @staticmethod
+    def get(request):
+        return Response({
+            'detail': 'Method "GET" not allowed. Provide a token and a tutorial id number.'
+        }, status=405)
 
     @staticmethod
     def post(request):
