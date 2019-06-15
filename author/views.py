@@ -5,6 +5,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView, Response
 from rest_framework.permissions import IsAdminUser, AllowAny
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 
 from blog.models import Post
@@ -120,6 +121,8 @@ class AuthorLikedTutorialIdsAPIView(APIView):
     Required an authtoken to verify only the user can view
     his / her liked tutorials. No justification found yet.
     """
+
+    parser_classes = (FormParser, MultiPartParser)
 
     @staticmethod
     def post(request):
