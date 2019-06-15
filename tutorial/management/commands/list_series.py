@@ -32,8 +32,9 @@ class Command(BaseCommand):
                 table.add_row([
                     s.tutorials.count(),
                     s.id,
-                    s.name,
-                    f'{s.description[:60]}',
+                    f'{s.name[:20]}',
+                    f'{s.description[:30]}',
+                    f'{s.thumbnail[-3:]}',
                     s.timestamp.ctime(),
                     s.type_of,
                     s.creator,
