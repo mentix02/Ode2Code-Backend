@@ -21,7 +21,7 @@ $ sudo apt install mysql-server mysql-client python3.6
 The next recommended step would be to create and activate a virtual environment for your Python interpreter. Installing virtualenv using `pip` is the way to go (make sure you're in the backend directory) - 
 
 ```bash
-$ pip install virtualenv
+$ pip install --upgrade pip virtualenv
 $ virtualenv venv
 $ source venv/bin/activate
 ```
