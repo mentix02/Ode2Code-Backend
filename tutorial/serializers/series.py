@@ -18,7 +18,7 @@ class SeriesListSerializer(ModelSerializer):
     class Meta:
 
         model = Series
-        fields = ('id', 'name', 'slug', 'creator', 'type_of', 'timestamp', 'tutorial_count')
+        fields = ('id', 'name', 'slug', 'creator', 'type_of', 'timestamp', 'tutorial_count', 'description', 'thumbnail')
 
 
 class SeriesDetailSerializer(ModelSerializer):
