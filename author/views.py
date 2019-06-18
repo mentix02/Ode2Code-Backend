@@ -129,14 +129,18 @@ class AuthorLikedTutorialIdsAPIView(APIView):
 
         token = request.POST.get('token')
 
-        if not token:
+        if not token and not request.user.is_authenticated:
             return Response({
                 'error': 'Unauthorized to view response.'
             }, status=401)
 
         try:
 
-            user_id = Token.objects.get(key=token).user_id
+            if token:
+                user_id = Token.objects.get(key=token).user_id
+            else:
+                user_id = request.user.id
+
             tutorials = Tutorial.votes.all(user_id)
 
             return Response([
