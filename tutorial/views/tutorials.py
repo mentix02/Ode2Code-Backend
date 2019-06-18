@@ -71,12 +71,14 @@ class TutorialLikeUnlikeAPIView(APIView):
             if not tutorial.votes.exists(user_id):
                 tutorial.votes.up(user_id)
                 return Response({
+                    'action': 1,
                     'voted': 'Liked by user.'
                 })
             else:
                 tutorial.votes.delete(user_id)
                 return Response({
-                    'voted': 'Unliked by user.'
+                    'action': -1,
+                    'voted': 'Unliked by uer.'
                 })
 
         except ObjectDoesNotExist:
