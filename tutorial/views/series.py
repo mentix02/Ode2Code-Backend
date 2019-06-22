@@ -1,12 +1,20 @@
+from tutorial.views.utils import bookmark_exists
+
 from django.shortcuts import get_list_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from django.core.exceptions import ObjectDoesNotExist
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.generics import (
     ListAPIView,
     RetrieveAPIView,
 )
 
+from author.models import Bookmark
 from tutorial.models import Tutorial, Series
 from tutorial.serializers import (
     SeriesListSerializer,
@@ -54,3 +62,63 @@ class SeriesTutorialsListAPIView(ListAPIView):
         series_slug = self.kwargs['slug']
         query = get_list_or_404(Tutorial, series__slug=series_slug)
         return query
+
+
+class SeriesBookmarkAPIView(APIView):
+    """
+    Bookmarks a Series by an authenticated user if
+    existing bookmarks are not found for the object
+    """
+
+    parser_classes = (FormParser, MultiPartParser)
+
+    @staticmethod
+    def get(request):
+        return Response({
+            'detail': 'Method "GET" not allowed. Provide a token and a series id number.'
+        }, status=405)
+
+    @staticmethod
+    def post(request):
+
+        token = request.POST.get('token')
+        series_id = request.POST.get('series_id')
+
+        if not token:
+            return Response({
+                'error': 'Unauthorized to view response.'
+            }, status=401)
+
+        if not series_id:
+            return Response({
+                'error': 'Tutorial id not provided.'
+            }, status=401)
+
+        try:
+
+            series = Series.objects.get(id=series_id)
+            author_id = Token.objects.get(key=token).user.author.id
+
+            if bookmark_exists(author_id, series.id):
+                Bookmark.objects.get(author_id=author_id, model_pk=series_id, model_type='series').delete()
+                return Response({
+                    'action': -1
+                })
+            else:
+                Bookmark.objects.create(
+                    author_id=author_id,
+                    model_type='series',
+                    model_pk=series_id
+                ).save()
+                return Response({
+                    'action': 1
+                })
+
+        except ObjectDoesNotExist:
+            return Response({
+                'error': 'Invalid auth token provided or tutorial does not exist.'
+            }, status=401)
+        except Exception as e:
+            return Response({
+                'error': str(e)
+            }, status=500)
