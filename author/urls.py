@@ -8,6 +8,7 @@ from author.views import (
     AuthorTutorialListAPIView,
     AuthorLikedTutorialIdsAPIView,
     GetTokenAndAuthorDetailsAPIView,
+    AuthorBookmarkedSeriesIdsAPIView,
 )
 
 urlpatterns = (
@@ -26,4 +27,8 @@ urlpatterns = (
 
     # for author liked models
     path('liked/tutorials/', AuthorLikedTutorialIdsAPIView.as_view()),
+
+    # for author bookmarked models
+    path('bookmarked/series/', AuthorBookmarkedSeriesIdsAPIView.as_view())
+
 )
