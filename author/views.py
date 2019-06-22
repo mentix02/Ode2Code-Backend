@@ -9,7 +9,7 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 
 from blog.models import Post
-from author.models import Author
+from author.models import Author, Bookmark
 from tutorial.models import Tutorial, Series
 from blog.serializers import PostListSerializer
 from author.serializers import (
@@ -125,6 +125,20 @@ class AuthorLikedTutorialIdsAPIView(APIView):
     parser_classes = (FormParser, MultiPartParser)
 
     @staticmethod
+    def get(request):
+
+        if request.user.is_authenticated:
+            user_id = request.user.id
+            tutorials = Tutorial.votes.all(user_id)
+            return Response([
+                tutorial.pk for tutorial in tutorials
+            ])
+        else:
+            return Response({
+                'error': 'Unauthorized to view response.'
+            }, status=401)
+
+    @staticmethod
     def post(request):
 
         token = request.POST.get('token')
@@ -143,9 +157,63 @@ class AuthorLikedTutorialIdsAPIView(APIView):
 
             tutorials = Tutorial.votes.all(user_id)
 
+            return Response({
+                'count': len(tutorials),
+                'results': [tutorial.pk for tutorial in tutorials]
+            })
+
+        except ObjectDoesNotExist:
+            return Response({
+                'error': 'Invalid auth token provided.'
+            }, status=401)
+
+
+class AuthorBookmarkedSeriesIdsAPIView(APIView):
+    """
+    Returns a list of ids of series bookmarked by the user.
+    Required an authtoken to verify only the user can view
+    his / her liked tutorials.
+    """
+
+    parser_classes = (FormParser, MultiPartParser)
+
+    @staticmethod
+    def get(request):
+
+        if request.user.is_authenticated:
+            user = request.user
+            series = Bookmark.objects.filter(author_id=user.author.id, model_type='series')
             return Response([
-                tutorial.pk for tutorial in tutorials
+                s.model_pk for s in series
             ])
+        else:
+            return Response({
+                'error': 'Unauthorized to view response.'
+            }, status=401)
+
+    @staticmethod
+    def post(request):
+
+        token = request.POST.get('token')
+
+        if not token and not request.user.is_authenticated:
+            return Response({
+                'error': 'Unauthorized to view response.'
+            }, status=401)
+
+        try:
+
+            if token:
+                user_id = Token.objects.get(key=token).user_id
+            else:
+                user_id = request.user.id
+
+            series = Bookmark.objects.filter(author__user_id=user_id, model_type='series')
+
+            return Response({
+                'count': len(series),
+                'results': [s.id for s in series]
+            })
 
         except ObjectDoesNotExist:
             return Response({
