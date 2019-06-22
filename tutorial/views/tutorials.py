@@ -10,20 +10,17 @@ from rest_framework.generics import (
 )
 
 from tutorial.models import Tutorial
+from tutorial.paginators import RecentTutorialPaginator
 from tutorial.serializers import (
     TutorialListSerializer,
     TutorialDetailSerializer
 )
 
 
-class RecentTutorialAPIView(APIView):
-
-    @staticmethod
-    def get(request):
-        query = Tutorial.objects.filter(draft=False).order_by('-pk')[:12]
-        data = TutorialListSerializer(query, many=True).data
-
-        return Response(data)
+class RecentTutorialAPIView(ListAPIView):
+    serializer_class = TutorialListSerializer
+    pagination_class = RecentTutorialPaginator
+    queryset = Tutorial.objects.order_by('-pk')[:12]
 
 
 class TutorialDetailAPIView(RetrieveAPIView):
@@ -85,3 +82,7 @@ class TutorialLikeUnlikeAPIView(APIView):
             return Response({
                 'error': 'Invalid auth token provided or tutorial does not exist.'
             }, status=401)
+        except Exception as e:
+            return Response({
+                'error': str(e)
+            }, status=500)
