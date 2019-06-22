@@ -5,7 +5,6 @@ from rest_framework.serializers import (
     DateTimeField,
     ModelSerializer,
     StringRelatedField,
-    HyperlinkedIdentityField,
 )
 
 
@@ -25,13 +24,13 @@ class SeriesDetailSerializer(ModelSerializer):
 
     creator = StringRelatedField()
     tutorial_count = IntegerField(source='get_tutorial_count')
-    tutorials = HyperlinkedIdentityField(many=True,
-                                         lookup_field='slug',
-                                         source='get_tutorials',
-                                         lookup_url_kwarg='slug',
-                                         view_name='api-tutorial-detail')
+    # tutorials = HyperlinkedIdentityField(many=True,
+    #                                      lookup_field='slug',
+    #                                      source='get_tutorials',
+    #                                      lookup_url_kwarg='slug',
+    #                                      view_name='api-tutorial-detail')
 
     class Meta:
 
         model = Series
-        fields = ('id', 'name', 'slug', 'creator', 'type_of', 'description', 'tutorial_count', 'tutorials')
+        fields = ('id', 'name', 'slug', 'creator', 'type_of', 'description', 'tutorial_count')
