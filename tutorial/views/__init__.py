@@ -4,5 +4,6 @@ from tutorial.views.tutorials import (
 )
 from tutorial.views.series import (
     SeriesListAPIView,
+    SeriesBookmarkAPIView,
     SeriesTutorialsListAPIView,
 )
