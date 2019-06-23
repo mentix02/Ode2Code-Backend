@@ -14,6 +14,7 @@ from vote.models import VoteModel
 class Series(models.Model):
 
     CHOICES: typing.List[typing.Tuple[str, str]] = [
+        ('other', 'Other'),
         ('design', 'Design'),
         ('language', 'Language'),
         ('algorithms', 'Algorithms'),
@@ -26,7 +27,7 @@ class Series(models.Model):
     description = models.TextField(max_length=300)
     thumbnail = models.URLField(null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
-    type_of = models.CharField(choices=CHOICES, max_length=20)
+    type_of = models.CharField(choices=CHOICES, max_length=50)
     creator = models.ForeignKey(Author, on_delete=models.CASCADE)
     slug = models.SlugField(max_length=200, blank=True, unique=True)
 
