@@ -65,6 +65,63 @@ class SeriesTutorialsListAPIView(ListAPIView):
         return query
 
 
+class SeriesCreateAPIView(APIView):
+
+    parser_classes = (FormParser, MultiPartParser)
+
+    @staticmethod
+    def get(request):
+        return Response({
+            'error': 'Method "GET" not allowed.'
+        }, status=405)
+
+    @staticmethod
+    def post(request):
+
+        # get required parameters
+        try:
+            name = request.POST['name']
+            type_of = request.POST['type_of']
+            thumbnail = request.POST['thumbnail']
+            description = request.POST['description']
+        except Exception as e:
+            return Response({
+                'error': f'{str(e)} field not provided.'
+            })
+
+        token = request.POST.get('token')
+
+        if not token and not request.user.is_authenticated:
+            return Response({
+                'error': 'You need to be authenticated to create a new series.'
+            }, status=405)
+
+        try:
+
+            if token:
+                creator_id = Token.objects.get(key=token).user.author.id
+            else:
+                creator_id = request.user.author.id
+
+            series = Series.objects.create(
+                name=name,
+                type_of=type_of,
+                thumbnail=thumbnail,
+                creator_id=creator_id,
+                description=description,
+            )
+
+            data = SeriesDetailSerializer(series).data
+            return Response({
+                'details': data
+            })
+
+        except Exception as e:
+            return Response({
+                'error': str(e)
+            }, status=500)
+
+
 class SeriesBookmarkAPIView(APIView):
     """
     Bookmarks a Series by an authenticated user if
@@ -76,7 +133,7 @@ class SeriesBookmarkAPIView(APIView):
     @staticmethod
     def get(request):
         return Response({
-            'detail': 'Method "GET" not allowed. Provide a token and a series id number.'
+            'error': 'Method "GET" not allowed. Provide a token and a series id number.'
         }, status=405)
 
     @staticmethod
@@ -101,7 +158,9 @@ class SeriesBookmarkAPIView(APIView):
             author_id = Token.objects.get(key=token).user.author.id
 
             if bookmark_exists(author_id, series.id):
-                Bookmark.objects.get(author_id=author_id, model_pk=series_id, model_type='series').delete()
+                Bookmark.objects.get(model_pk=series_id,
+                                     author_id=author_id,
+                                     model_type='series').delete()
                 return Response({
                     'action': -1
                 })
