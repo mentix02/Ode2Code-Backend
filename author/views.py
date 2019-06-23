@@ -1,5 +1,6 @@
+from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
-from django.shortcuts import get_list_or_404
+from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework.authtoken.models import Token
@@ -82,7 +83,8 @@ class AuthorPostListAPIView(ListAPIView):
     def get_queryset(self):
 
         username = self.kwargs['username']
-        queryset = get_list_or_404(Post, author__user__username=username)
+        user = get_object_or_404(User, username=username)
+        queryset = Post.objects.filter(author__user=user)
         return queryset
 
 
@@ -97,7 +99,8 @@ class AuthorTutorialListAPIView(ListAPIView):
     def get_queryset(self):
 
         username = self.kwargs['username']
-        queryset = get_list_or_404(Tutorial, author__user__username=username)
+        user = get_object_or_404(User, username=username)
+        queryset = Tutorial.objects.filter(author__user=user)
         return queryset
 
 
@@ -111,7 +114,8 @@ class AuthorSeriesListAPIView(ListAPIView):
     def get_queryset(self):
 
         username = self.kwargs['username']
-        queryset = get_list_or_404(Series, creator__user__username=username)
+        user = get_object_or_404(User, username=username)
+        queryset = Series.objects.filter(creator__user=user)
         return queryset
 
 

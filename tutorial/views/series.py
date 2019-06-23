@@ -1,6 +1,6 @@
 from tutorial.views.utils import bookmark_exists
 
-from django.shortcuts import get_list_or_404
+from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.core.exceptions import ObjectDoesNotExist
@@ -60,7 +60,8 @@ class SeriesTutorialsListAPIView(ListAPIView):
     def get_queryset(self):
 
         series_slug = self.kwargs['slug']
-        query = get_list_or_404(Tutorial, series__slug=series_slug)
+        series = get_object_or_404(Series, slug=series_slug)
+        query = Tutorial.objects.filter(series=series, draft=False)
         return query
 
 
