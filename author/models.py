@@ -21,6 +21,12 @@ class Author(models.Model):
     def __str__(self):
         return self.user.username
 
+    def authenticate(self):
+        self.authenticated = True
+        self.user.is_staff = True
+        self.user.save()
+        self.save()
+
     class Meta:
         ordering = ('-pk',)
 
