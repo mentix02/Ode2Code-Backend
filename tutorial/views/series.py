@@ -1,12 +1,12 @@
-from tutorial.views.utils import bookmark_exists
-
-from django.shortcuts import get_object_or_404
+from django.utils.text import slugify
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import get_object_or_404, get_list_or_404
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.renderers import JSONRenderer
 from rest_framework.authtoken.models import Token
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.generics import (
@@ -14,12 +14,14 @@ from rest_framework.generics import (
     RetrieveAPIView,
 )
 
+from tutorial.views.utils import bookmark_exists
 from author.models import Bookmark
 from tutorial.models import Tutorial, Series
 from tutorial.serializers import (
     SeriesListSerializer,
     SeriesDetailSerializer,
     TutorialListSerializer,
+    SeriesNameAndIdSerializer,
 )
 
 
@@ -182,3 +184,59 @@ class SeriesBookmarkAPIView(APIView):
             return Response({
                 'error': str(e)
             }, status=500)
+
+
+class SeriesAvailabilityAPIView(APIView):
+    """
+    Takes a name from POST request data
+    and checks if a Series with the slug
+    for that name exists - returns True
+    if it does not and False for otherwise.
+    """
+
+    @staticmethod
+    def post(request):
+        name = request.POST.get('name')
+
+        if not name:
+            return Response({
+                'error': 'Please provide a name for series to check if it\'s taken.'
+            })
+
+        if name:
+
+            available = False
+
+            try:
+                series = Series.objects.get(slug=slugify(name))
+            except ObjectDoesNotExist:
+                available = True
+            finally:
+                return Response({
+                    'available': available
+                })
+
+
+class SeriesTypeListAPIView(ListAPIView):
+
+    serializer_class = SeriesListSerializer
+
+    def get_queryset(self):
+        type_of_slug = self.kwargs['slug']
+        series = get_list_or_404(Series, type_of=type_of_slug)
+        return series
+
+
+class SeriesNameAndIdListAPIView(APIView):
+
+    renderer_classes = (JSONRenderer,)
+
+    @method_decorator(cache_page(60 * 5, key_prefix='SeriesNameList'))
+    def dispatch(self, *args, **kwargs):
+        return super(SeriesNameListAPIView, self).dispatch(*args, **kwargs)
+
+    @staticmethod
+    def get(request):
+        series = Series.objects.all()
+        data = SeriesNameAndIdSerializer(series, many=True).data
+        return Response(data)
