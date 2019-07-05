@@ -233,7 +233,7 @@ class SeriesNameAndIdListAPIView(APIView):
 
     @method_decorator(cache_page(60 * 5, key_prefix='SeriesNameList'))
     def dispatch(self, *args, **kwargs):
-        return super(SeriesNameListAPIView, self).dispatch(*args, **kwargs)
+        return super(SeriesNameAndIdListAPIView, self).dispatch(*args, **kwargs)
 
     @staticmethod
     def get(request):
