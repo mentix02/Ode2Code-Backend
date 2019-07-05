@@ -6,4 +6,5 @@ from tutorial.serializers.tutorials import (
 from tutorial.serializers.series import (
     SeriesListSerializer,
     SeriesDetailSerializer,
+    SeriesNameAndIdSerializer,
 )
