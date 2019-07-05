@@ -13,7 +13,7 @@ class SeriesNameAndIdSerializer(ModelSerializer):
     class Meta:
 
         model = Series
-        fields = ('name', 'slug')
+        fields = ('name', 'pk')
 
 
 class SeriesListSerializer(ModelSerializer):
