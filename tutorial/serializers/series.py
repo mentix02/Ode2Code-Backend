@@ -8,6 +8,14 @@ from rest_framework.serializers import (
 )
 
 
+class SeriesNameAndIdSerializer(ModelSerializer):
+
+    class Meta:
+
+        model = Series
+        fields = ('name', 'slug')
+
+
 class SeriesListSerializer(ModelSerializer):
 
     creator = StringRelatedField()
