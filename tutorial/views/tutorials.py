@@ -90,6 +90,18 @@ class TutorialLikeUnlikeAPIView(APIView):
 
 
 class TutorialCreateAPIView(APIView):
+    """
+    Creates a new tutorial if POST
+    request is authenticated with
+    proper token or session authentication.
+
+    Requires form data =>
+        token?: uuid
+        title!: string
+        series_id!: int
+        draft?: bool (False)
+        description: long str
+    """
 
     parser_classes = (FormParser, MultiPartParser)
 
@@ -124,6 +136,7 @@ class TutorialCreateAPIView(APIView):
 
             tutorial = Tutorial.objects.create(
                 title=title,
+                content=content,
                 series_id=series_id,
                 author_id=author_id,
                 description=description,
@@ -132,7 +145,7 @@ class TutorialCreateAPIView(APIView):
             data = TutorialDetailSerializer(tutorial).data
             return Response({
                 'details': data
-            })
+            }, status=201)
 
         except Exception as e:
             return Response({
