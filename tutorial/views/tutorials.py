@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework.views import APIView
@@ -82,6 +83,57 @@ class TutorialLikeUnlikeAPIView(APIView):
             return Response({
                 'error': 'Invalid auth token provided or tutorial does not exist.'
             }, status=401)
+        except Exception as e:
+            return Response({
+                'error': str(e)
+            }, status=500)
+
+
+class TutorialCreateAPIView(APIView):
+
+    parser_classes = (FormParser, MultiPartParser)
+
+    @staticmethod
+    def post(request):
+
+        # get required parameters
+        try:
+            title = request.POST['title']
+            content = request.POST['content']
+            series_id = request.POST['series_id']
+            draft = request.POST.get('draft', False)
+            description = request.POST['description']
+        except Exception as e:
+            return Response({
+                'error': f'"{str(e)}" field not provided.'
+            }, status=405)
+
+        token = request.POST.get('token')
+
+        if not token and not request.user.is_authenticated:
+            return Response({
+                'error': 'You need to be authenticated to create a new tutorial.'
+            }, status=405)
+
+        try:
+
+            if token:
+                author_id = Token.objects.get(key=token).user.author.id
+            else:
+                author_id = request.user.author.id
+
+            tutorial = Tutorial.objects.create(
+                title=title,
+                series_id=series_id,
+                author_id=author_id,
+                description=description,
+            )
+
+            data = TutorialDetailSerializer(tutorial).data
+            return Response({
+                'details': data
+            })
+
         except Exception as e:
             return Response({
                 'error': str(e)
