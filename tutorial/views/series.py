@@ -68,14 +68,33 @@ class SeriesTutorialsListAPIView(ListAPIView):
 
 
 class SeriesCreateAPIView(APIView):
+    """
+    Creates a new series if POST request
+    is authenticated with proper token or
+    session authentication.
+
+    Requires form data =>
+        token?: uuid
+        name!: short string
+        type_of!: short string
+        thumbnail: string (url)
+        description!: long string
+
+    Returns JSON => {
+        "details": {
+            "id": id,
+            "name": name,
+            "slug": slug,
+            "type_of": type_of,
+            "tutorial_count": 0,
+            "description": description,
+            "creator": author__user__username,
+        }
+    }
+
+    """
 
     parser_classes = (FormParser, MultiPartParser)
-
-    @staticmethod
-    def get(request):
-        return Response({
-            'error': 'Method "GET" not allowed.'
-        }, status=405)
 
     @staticmethod
     def post(request):
