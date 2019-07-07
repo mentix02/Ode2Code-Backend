@@ -7,13 +7,13 @@ from django.contrib.auth.models import User
 from author.models import Author
 
 fake = faker.Faker()
-
+usernames = [username[0] for username in User.objects.values_list('username')]
 
 def generate_fake_username(username):
-    usernames = [username[0] for username in User.objects.values_list('username')]
     if username in usernames:
         return generate_fake_username(fake.user_name())
-    return username
+    else:
+        return username
 
 
 def create_user() -> typing.Tuple[int, bool]:
@@ -33,6 +33,7 @@ def create_user() -> typing.Tuple[int, bool]:
         first_name=first_name,
     )
     user.save()
+    usernames.append(user.username)
     return user.id, authenticate
 
 
