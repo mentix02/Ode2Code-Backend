@@ -27,6 +27,16 @@ class Author(models.Model):
         self.user.save()
         self.save()
 
+    def promote(self):
+        """
+        Promotes an author's status to
+        staff member and automatically
+        authenticates him / her (if that
+        wasn't done already).
+        """
+        self.user.is_staff = True
+        self.authenticate()
+
     class Meta:
         ordering = ('-pk',)
 
