@@ -28,9 +28,9 @@ def create_user() -> typing.Tuple[int, bool]:
     return user.id, authenticate
 
 
-def create_author():
+def create_author() -> Author:
     user_id, authenticated = create_user()
-    Author.objects.create(
+    return Author.objects.create(
         user_id=user_id,
         bio=fake.text(65),
         authenticated=authenticated
