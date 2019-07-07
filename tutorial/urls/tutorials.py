@@ -4,6 +4,7 @@ from tutorial.views.tutorials import (
     RecentTutorialAPIView,
     TutorialDetailAPIView,
     TutorialCreateAPIView,
+    TutorialDeleteAPIView,
     TutorialLikeUnlikeAPIView,
 )
 
@@ -13,5 +14,6 @@ urlpatterns = (
 
     # CRUD operations on tutorials
     path('new/', TutorialCreateAPIView.as_view()),
+    path('delete/', TutorialDeleteAPIView.as_view()),
     path('like/', TutorialLikeUnlikeAPIView.as_view()),
 )
