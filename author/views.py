@@ -23,9 +23,6 @@ from tutorial.serializers import (
 )
 
 
-UP, DOWN = 1, 0
-
-
 class GetTokenAndAuthorDetailsAPIView(APIView):
 
     @staticmethod
@@ -69,7 +66,7 @@ class AuthorDetailAPIView(RetrieveAPIView):
     lookup_field = 'user__username'
     queryset = Author.objects.all()
     permission_classes = (AllowAny,)
-    serializer_class = AuthorListSerializer
+    serializer_class = AuthorSerializer
 
 
 class AuthorPostListAPIView(ListAPIView):
