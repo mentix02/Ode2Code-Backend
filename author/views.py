@@ -24,13 +24,22 @@ from tutorial.serializers import (
 
 
 class GetTokenAndAuthorDetailsAPIView(APIView):
+    """
+    Takes in a POST request with form data
+    containing username and password and if
+    valid, returns a JSON response containing
+    authtoken and Author details (to be saved
+    in localStorage on frontend).
+    """
 
     @staticmethod
     def post(request):
 
+        # get username and password
         username = request.POST.get('username')
         password = request.POST.get('password')
 
+        # check if both were provided
         if not username:
             return Response({
                 'error': 'Username not provided.'
@@ -42,6 +51,7 @@ class GetTokenAndAuthorDetailsAPIView(APIView):
 
         user = authenticate(username=username, password=password)
 
+        # if username & password combo succeeds
         if user is not None:
             author = AuthorSerializer(user.author).data
             token = Token.objects.get(user_id__exact=user.id).key
@@ -56,8 +66,29 @@ class GetTokenAndAuthorDetailsAPIView(APIView):
 
 
 class AuthorListAPIView(ListAPIView):
+    """
+    Purely for administrative purposes.
+    Only admin is allowed to view list
+    of registered authors and details.
+    """
     queryset = Author.objects.all()
+
+    # permission_classes to contain only
+    # admin viewing rights was a conscious
+    # decision that lets only me to view
+    # the number of authors (and their
+    # details) for analytical purposes, etc.
     permission_classes = (IsAdminUser,)
+
+    # no pagination is applied since
+    # this is not a frequently called
+    # view and this data will mostly
+    # be used for purposes that aren't
+    # meant for the common user and also
+    # no pagination makes TestCase asserting
+    # response content a lot more easy.
+    pagination_class = None
+
     serializer_class = AuthorListSerializer
 
 
