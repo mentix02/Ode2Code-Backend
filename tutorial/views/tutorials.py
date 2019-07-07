@@ -118,14 +118,14 @@ class TutorialCreateAPIView(APIView):
         except Exception as e:
             return Response({
                 'error': f'"{str(e)}" field not provided.'
-            }, status=405)
+            }, status=400)
 
         token = request.POST.get('token')
 
         if not token and not request.user.is_authenticated:
             return Response({
                 'error': 'You need to be authenticated to create a new tutorial.'
-            }, status=405)
+            }, status=401)
 
         try:
 
@@ -151,3 +151,45 @@ class TutorialCreateAPIView(APIView):
             return Response({
                 'error': str(e)
             }, status=500)
+
+
+class TutorialDeleteAPIView(APIView):
+
+    @staticmethod
+    def post(request):
+
+        token = request.POST.get('token')
+        tutorial_id = request.POST.get('tutorial_id')
+
+        if not token:
+            return Response({
+                'error': "You are not authenticated to delete a tutorial."
+            }, status=401)
+        if not tutorial_id:
+            return Response({
+                'error': "Please provide a tutorial id to delete."
+            }, status=405)
+
+        tutorial = get_object_or_404(Tutorial, id=tutorial_id)
+
+        try:
+
+            if token:
+                author_id = Token.objects.get(key=token).user.author.id
+            else:
+                author_id = request.user.author.id
+
+            if tutorial.author.id == author_id or tutorial.author.user.is_superuser:
+                tutorial.delete()
+                return Response({
+                    'deleted': tutorial_id
+                }, status=204)
+            else:
+                return Response({
+                    'error': 'You are not authorized to delete this tutorial.'
+                }, status=401)
+
+        except Exception as e:
+            return Response({
+                'error': str(e)
+            }, status=405)
