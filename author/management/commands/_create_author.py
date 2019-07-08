@@ -43,4 +43,4 @@ def create_author() -> Author:
         user_id=user_id,
         bio=fake.text(65),
         authenticated=authenticated
-    ).save()
+    )
