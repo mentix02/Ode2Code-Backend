@@ -11,6 +11,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 
 from blog.models import Post
 from author.models import Author, Bookmark
+from author.permissions import IsSuperUser
 from tutorial.models import Tutorial, Series
 from blog.serializers import PostListSerializer
 from author.serializers import (
@@ -78,7 +79,7 @@ class AuthorListAPIView(ListAPIView):
     # decision that lets only me to view
     # the number of authors (and their
     # details) for analytical purposes, etc.
-    permission_classes = (IsAdminUser,)
+    permission_classes = (IsSuperUser,)
 
     # no pagination is applied since
     # this is not a frequently called
