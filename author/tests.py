@@ -6,17 +6,36 @@ from django.contrib.auth.models import User
 from django.test import TestCase, RequestFactory
 
 from rest_framework.authtoken.models import Token
+from rest_framework.test import (
+    APIRequestFactory,
+    force_authenticate,
+)
 
+from blog.models import Post
 from author.models import Author
+from tutorial.models import Tutorial, Series
+from blog.serializers import PostListSerializer
+# noinspection PyProtectedMember
+from blog.management.commands._create_post import create_post
+from author.management.commands.new_author import create_author
+# noinspection PyProtectedMember
+from tutorial.management.commands._create_series import create_one_series
+# noinspection PyProtectedMember
+from tutorial.management.commands._create_tutorial import create_tutorial
+from tutorial.serializers import (
+    SeriesListSerializer,
+    TutorialListSerializer,
+)
 from author.serializers import (
     AuthorSerializer,
     AuthorListSerializer,
 )
-# noinspection PyProtectedMember
-from author.management.commands._create_author import create_author
 from author.views import (
     AuthorListAPIView,
     AuthorDetailAPIView,
+    AuthorPostListAPIView,
+    AuthorSeriesListAPIView,
+    AuthorTutorialListAPIView,
     GetTokenAndAuthorDetailsAPIView
 )
 
@@ -32,7 +51,7 @@ class AuthorListTest(TestCase):
         # create request factory
         # and assign base url property
         self.url = '/api/authors/'
-        self.factory = RequestFactory()
+        self.factory = APIRequestFactory()
 
         # create admin user (and subsequently author)
         self.admin_user = User.objects.create_superuser('admin', 'admin@admin.com', 'aaaa')
@@ -53,8 +72,8 @@ class AuthorListTest(TestCase):
 
         request = self.factory.get(self.url)
 
-        # setting admin user to make authenticated request
-        request.user = self.admin_user
+        # forcing admin user to make authenticated request
+        force_authenticate(request, self.admin_user)
 
         # make request and render response
         response = AuthorListAPIView.as_view()(request)
@@ -79,8 +98,8 @@ class AuthorListTest(TestCase):
 
         request = self.factory.get(self.url)
 
-        # setting simple user to make authenticated request
-        request.user = self.authors[random.randint(0, 48)].user
+        # forcing simple user to make authenticated request
+        force_authenticate(request, random.choice(self.authors).user)
 
         # make request and render response
         response = AuthorListAPIView.as_view()(request)
@@ -258,3 +277,297 @@ class AuthorTokenAndDetailTest(TestCase):
 
         self.assertEqual(content_with_password_error, '{"error":"Password not provided."}')
         self.assertEqual(content_with_username_error, '{"error":"Username not provided."}')
+
+
+class AuthorContentListingTest(TestCase):
+    """
+    Collection of tests that check functioning of
+    the ListAPIView over the content that are related
+    to specific Author instances as ForeignKeys.
+    """
+
+    @staticmethod
+    def generate_fake_data_for_author(author_id: int) -> typing.Dict[str, typing.List[typing.Any]]:
+        return {
+            'posts': [create_post(author_id) for _ in range(20)],
+            'series': [create_one_series(author_id) for _ in range(20)],
+            'tutorials': [create_tutorial(author_id) for _ in range(20)],
+        }
+
+    def generate_author_content_url(self, username: str, model_type: str, page: int = 1) -> str:
+        return f'{self.url}/{username}/{model_type}/?page={page}'
+
+    def setUp(self):
+        """
+        creates an author and multiple posts,
+        tutorials, as well as series created
+        by the above mentioned author.
+        """
+
+        # create factory and set base url
+        self.factory = RequestFactory()
+        self.url = '/api/authors/detail'
+
+        # create first author
+        self.author_1 = create_author()
+        self.author_2 = create_author()
+
+        # generate posts, series, and tutorials
+        self.author_1_content = self.generate_fake_data_for_author(self.author_1.id)
+        self.author_2_content = self.generate_fake_data_for_author(self.author_2.id)
+
+    def test_author_posts(self):
+        """
+        Compares list of author post against
+        JSON response of AuthorTutorialListAPIView
+        in proper format - JSON data.
+        """
+
+        # get pages 1 and 2 - due to page 
+        # number based pagination with a limit
+        # of 10 objects per page, we need to
+        # make 2 requests to get all the
+        # content in any view that uses ListAPIView
+        # TODO make a more generic method to get paginated data
+
+        username_1, username_2 = self.author_1.user.username, self.author_2.user.username
+
+        # request page 1 & 2 for author 1
+        request_author_1_page_1 = self.factory.get(self.generate_author_content_url(username_1, 'posts'))
+        request_author_1_page_2 = self.factory.get(self.generate_author_content_url(username_1, 'posts', 2))
+
+        # request page 1 & 2 for author 2
+        request_author_2_page_1 = self.factory.get(self.generate_author_content_url(username_2, 'posts'))
+        request_author_2_page_2 = self.factory.get(self.generate_author_content_url(username_2, 'posts', 2))
+
+        # get responses for requests
+
+        response_author_1_page_1 = AuthorPostListAPIView.as_view()(request_author_1_page_1, username=username_1)
+        response_author_1_page_2 = AuthorPostListAPIView.as_view()(request_author_1_page_2, username=username_1)
+        response_author_1_page_1.render()
+        response_author_1_page_2.render()
+
+        response_author_2_page_1 = AuthorPostListAPIView.as_view()(request_author_2_page_1, username=username_2)
+        response_author_2_page_2 = AuthorPostListAPIView.as_view()(request_author_2_page_2, username=username_2)
+        response_author_2_page_1.render()
+        response_author_2_page_2.render()
+
+        # decode contents
+        author_1_post_list_page_1 = json.loads(response_author_1_page_1.content.decode())
+        author_1_post_list_page_2 = json.loads(response_author_1_page_2.content.decode())
+
+        author_2_post_list_page_1 = json.loads(response_author_2_page_1.content.decode())
+        author_2_post_list_page_2 = json.loads(response_author_2_page_2.content.decode())
+
+        # perform actual test
+
+        # check OK responses
+        self.assertEqual(response_author_1_page_1.status_code, 200)
+        self.assertEqual(response_author_1_page_2.status_code, 200)
+
+        self.assertEqual(response_author_2_page_1.status_code, 200)
+        self.assertEqual(response_author_2_page_2.status_code, 200)
+
+        # check content
+
+        # get serialized values
+
+        author_1_post_list_page_1_serialized_data = PostListSerializer(
+            Post.objects.filter(author=self.author_1)[:10],
+            many=True
+        ).data
+
+        author_1_post_list_page_2_serialized_data = PostListSerializer(
+            Post.objects.filter(author=self.author_1)[10:],
+            many=True
+        ).data
+
+        author_2_post_list_page_1_serialized_data = PostListSerializer(
+            Post.objects.filter(author=self.author_2)[:10],
+            many=True
+        ).data
+
+        author_2_post_list_page_2_serialized_data = PostListSerializer(
+            Post.objects.filter(author=self.author_2)[10:],
+            many=True
+        ).data
+
+        # check consistent count
+        self.assertEqual(author_1_post_list_page_1['count'], 20)
+        self.assertEqual(author_1_post_list_page_2['count'], 20)
+
+        self.assertEqual(author_2_post_list_page_1['count'], 20)
+        self.assertEqual(author_2_post_list_page_2['count'], 20)
+
+        # check actual JSON content
+        self.assertEqual(author_1_post_list_page_1['results'], author_1_post_list_page_1_serialized_data, '1st')
+        self.assertEqual(author_1_post_list_page_2['results'], author_1_post_list_page_2_serialized_data, '2nd')
+
+        self.assertEqual(author_2_post_list_page_1['results'], author_2_post_list_page_1_serialized_data, '3rd')
+        self.assertEqual(author_2_post_list_page_2['results'], author_2_post_list_page_2_serialized_data, '4th')
+
+    def test_author_series(self):
+        """
+        Compares list of author series against
+        JSON response of AuthorSeriesListAPIView
+        in proper format - JSON data.
+        """
+
+        username_1, username_2 = self.author_1.user.username, self.author_2.user.username
+
+        # request page 1 & 2 for author 1
+        request_author_1_page_1 = self.factory.get(self.generate_author_content_url(username_1, 'series'))
+        request_author_1_page_2 = self.factory.get(self.generate_author_content_url(username_1, 'series', 2))
+
+        # request page 1 & 2 for author 2
+        request_author_2_page_1 = self.factory.get(self.generate_author_content_url(username_2, 'series'))
+        request_author_2_page_2 = self.factory.get(self.generate_author_content_url(username_2, 'series', 2))
+
+        # get responses for requests
+
+        response_author_1_page_1 = AuthorSeriesListAPIView.as_view()(request_author_1_page_1, username=username_1)
+        response_author_1_page_2 = AuthorSeriesListAPIView.as_view()(request_author_1_page_2, username=username_1)
+        response_author_1_page_1.render()
+        response_author_1_page_2.render()
+
+        response_author_2_page_1 = AuthorSeriesListAPIView.as_view()(request_author_2_page_1, username=username_2)
+        response_author_2_page_2 = AuthorSeriesListAPIView.as_view()(request_author_2_page_2, username=username_2)
+        response_author_2_page_1.render()
+        response_author_2_page_2.render()
+
+        # decode contents
+        author_1_series_list_page_2 = json.loads(response_author_1_page_2.content.decode())
+        author_1_series_list_page_1 = json.loads(response_author_1_page_1.content.decode())
+
+        author_2_series_list_page_1 = json.loads(response_author_2_page_1.content.decode())
+        author_2_series_list_page_2 = json.loads(response_author_2_page_2.content.decode())
+
+        # perform actual test
+
+        # check OK responses
+        self.assertEqual(response_author_1_page_1.status_code, 200)
+        self.assertEqual(response_author_1_page_2.status_code, 200)
+
+        self.assertEqual(response_author_2_page_1.status_code, 200)
+        self.assertEqual(response_author_2_page_2.status_code, 200)
+
+        # check content
+
+        # get serialized values
+
+        author_1_series_list_page_1_serialized_data = SeriesListSerializer(
+            Series.objects.filter(creator=self.author_1)[:10],
+            many=True
+        ).data
+
+        author_1_series_list_page_2_serialized_data = SeriesListSerializer(
+            Series.objects.filter(creator=self.author_1)[10:],
+            many=True
+        ).data
+
+        author_2_series_list_page_1_serialized_data = SeriesListSerializer(
+            Series.objects.filter(creator=self.author_2)[:10],
+            many=True
+        ).data
+
+        author_2_series_list_page_2_serialized_data = SeriesListSerializer(
+            Series.objects.filter(creator=self.author_2)[10:],
+            many=True
+        ).data
+
+        # check consistent count
+        self.assertEqual(author_1_series_list_page_1['count'], 20)
+        self.assertEqual(author_1_series_list_page_2['count'], 20)
+
+        self.assertEqual(author_2_series_list_page_1['count'], 20)
+        self.assertEqual(author_2_series_list_page_2['count'], 20)
+
+        # check actual JSON content
+        self.assertEqual(author_1_series_list_page_1['results'], author_1_series_list_page_1_serialized_data)
+        self.assertEqual(author_1_series_list_page_2['results'], author_1_series_list_page_2_serialized_data)
+
+        self.assertEqual(author_2_series_list_page_1['results'], author_2_series_list_page_1_serialized_data)
+        self.assertEqual(author_2_series_list_page_2['results'], author_2_series_list_page_2_serialized_data)
+
+    def test_author_tutorials(self):
+        """
+        Compares list of author tutorials against
+        JSON response of AuthorTutorialListAPIView
+        in proper format - JSON data.
+        """
+
+        username_1, username_2 = self.author_1.user.username, self.author_2.user.username
+
+        # request page 1 & 2 for author 1
+        request_author_1_page_1 = self.factory.get(self.generate_author_content_url(username_1, 'tutorials'))
+        request_author_1_page_2 = self.factory.get(self.generate_author_content_url(username_1, 'tutorials', 2))
+
+        # request page 1 & 2 for author 2
+        request_author_2_page_1 = self.factory.get(self.generate_author_content_url(username_2, 'tutorials'))
+        request_author_2_page_2 = self.factory.get(self.generate_author_content_url(username_2, 'tutorials', 2))
+
+        # get responses for requests
+
+        response_author_1_page_1 = AuthorTutorialListAPIView.as_view()(request_author_1_page_1, username=username_1)
+        response_author_1_page_2 = AuthorTutorialListAPIView.as_view()(request_author_1_page_2, username=username_1)
+        response_author_1_page_1.render()
+        response_author_1_page_2.render()
+
+        response_author_2_page_1 = AuthorTutorialListAPIView.as_view()(request_author_2_page_1, username=username_2)
+        response_author_2_page_2 = AuthorTutorialListAPIView.as_view()(request_author_2_page_2, username=username_2)
+        response_author_2_page_1.render()
+        response_author_2_page_2.render()
+
+        # decode contents
+        author_1_tutorial_list_page_1 = json.loads(response_author_1_page_1.content.decode())
+        author_1_tutorial_list_page_2 = json.loads(response_author_1_page_2.content.decode())
+
+        author_2_tutorial_list_page_1 = json.loads(response_author_2_page_1.content.decode())
+        author_2_tutorial_list_page_2 = json.loads(response_author_2_page_2.content.decode())
+
+        # perform actual test
+
+        # check OK responses
+        self.assertEqual(response_author_1_page_1.status_code, 200)
+        self.assertEqual(response_author_1_page_2.status_code, 200)
+
+        self.assertEqual(response_author_2_page_1.status_code, 200)
+        self.assertEqual(response_author_2_page_2.status_code, 200)
+
+        # check content
+
+        # get serialized values
+
+        author_1_tutorial_list_page_1_serialized_data = TutorialListSerializer(
+            Tutorial.objects.filter(author=self.author_1)[:10],
+            many=True
+        ).data
+
+        author_1_tutorial_list_page_2_serialized_data = TutorialListSerializer(
+            Tutorial.objects.filter(author=self.author_1)[10:],
+            many=True
+        ).data
+
+        author_2_tutorial_list_page_1_serialized_data = TutorialListSerializer(
+            Tutorial.objects.filter(author=self.author_2)[:10],
+            many=True
+        ).data
+
+        author_2_tutorial_list_page_2_serialized_data = TutorialListSerializer(
+            Tutorial.objects.filter(author=self.author_2)[10:],
+            many=True
+        ).data
+
+        # check consistent count
+        self.assertEqual(author_1_tutorial_list_page_1['count'], 20)
+        self.assertEqual(author_1_tutorial_list_page_2['count'], 20)
+
+        self.assertEqual(author_2_tutorial_list_page_1['count'], 20)
+        self.assertEqual(author_2_tutorial_list_page_2['count'], 20)
+
+        # check actual JSON content
+        self.assertEqual(author_1_tutorial_list_page_1['results'], author_1_tutorial_list_page_1_serialized_data)
+        self.assertEqual(author_1_tutorial_list_page_2['results'], author_1_tutorial_list_page_2_serialized_data)
+
+        self.assertEqual(author_2_tutorial_list_page_1['results'], author_2_tutorial_list_page_1_serialized_data)
+        self.assertEqual(author_2_tutorial_list_page_2['results'], author_2_tutorial_list_page_2_serialized_data)
