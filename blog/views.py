@@ -17,6 +17,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework.authtoken.models import Token
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.generics import (
     ListAPIView,
     RetrieveAPIView,
@@ -58,6 +59,8 @@ class PostCreateAPIView(APIView):
     Provides an interface to create new
     only if an authenticated request comes through.
     """
+
+    parser_classes = (FormParser, MultiPartParser)
 
     @staticmethod
     def post(request):
