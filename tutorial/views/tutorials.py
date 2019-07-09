@@ -117,7 +117,7 @@ class TutorialCreateAPIView(APIView):
             description = request.POST['description']
         except Exception as e:
             return Response({
-                'error': f'"{str(e)}" field not provided.'
+                'error': f'{str(e)} field not provided.'
             }, status=400)
 
         token = request.POST.get('token')
