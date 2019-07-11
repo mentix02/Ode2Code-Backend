@@ -35,4 +35,4 @@ class Post(VoteModel, models.Model):
 # noinspection PyUnusedLocal
 @receiver(pre_save, sender=Post)
 def post_title_to_slug(sender, instance: Post = None, **kwargs):
-    instance.slug = slugify(f'{instance.title} {instance.id}')
+    instance.slug = slugify(f'{instance.title}')
