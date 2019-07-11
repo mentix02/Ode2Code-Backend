@@ -15,12 +15,9 @@ from blog.models import Post
 from author.models import Author
 from tutorial.models import Tutorial, Series
 from blog.serializers import PostListSerializer
-# noinspection PyProtectedMember
 from blog.management.commands._create_post import create_post
 from author.management.commands.new_author import create_author
-# noinspection PyProtectedMember
 from tutorial.management.commands._create_series import create_one_series
-# noinspection PyProtectedMember
 from tutorial.management.commands._create_tutorial import create_tutorial
 from tutorial.serializers import (
     SeriesListSerializer,
