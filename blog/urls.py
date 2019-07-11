@@ -9,7 +9,7 @@ from blog.views import (
 app_name = 'blog'
 
 urlpatterns = [
-    path('', PostListAPIView.as_view()),
-    path('new/', PostCreateAPIView.as_view()),
-    path('detail/<slug:slug>/', PostDetailAPIView.as_view()),
+    path('', PostListAPIView.as_view(), name='api-list'),
+    path('new/', PostCreateAPIView.as_view(), name='api-new'),
+    path('detail/<slug:slug>/', PostDetailAPIView.as_view(), name='api-detail'),
 ]
