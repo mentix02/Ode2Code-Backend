@@ -92,6 +92,9 @@ DATABASES = {
         'NAME': 'ode2code',
         'ENGINE': 'django.db.backends.mysql',
         'PASSWORD': PASSWORD,
+        'OPTIONS': {
+            "init_command": "SET foreign_key_checks = 0;",
+        },
     }
 }
 
