@@ -85,6 +85,7 @@ class PostCreateTest(TestCase):
     def setUp(self):
         self.fake = faker.Faker()
         self.url = f'{BASE_URL}/new/'
+        self.factory = APIRequestFactory()
         self.authors = [create_author() for _ in range(4)]
         self.data = {
             'draft': random.random() < 0.10,
@@ -118,8 +119,7 @@ class PostCreateTest(TestCase):
         author = random.choice(self.authors)
         self.data['token'] = Token.objects.get(user_id=author.user_id).key,
 
-        factory = APIRequestFactory()
-        request = factory.post(self.url, self.data)
+        request = self.factory.post(self.url, self.data)
 
         response = PostCreateAPIView.as_view()(request)
         response.render()
@@ -133,3 +133,55 @@ class PostCreateTest(TestCase):
             slug__exact=slugify(self.data['title'])
         )).data
         self.assertEqual(content['details'], serialized_data)
+
+    def test_create_post_without_authentication(self):
+
+        request = self.factory.post(self.url, self.data)
+
+        response = PostCreateAPIView.as_view()(request)
+        response.render()
+
+        # check status code
+        self.assertEqual(response.status_code, 401)
+
+        # decode content and check error message
+        content = json.loads(response.content.decode())
+        self.assertEqual(content, {'error': 'You need to be authenticated to create a new post.'})
+
+    def test_create_post_incomplete_data_no_title(self):
+
+        author = random.choice(self.authors)
+        data = self.data.copy()
+        data['token'] = Token.objects.get(user_id=author.user_id)
+        del data['title']
+
+        request = self.factory.post(self.url, data)
+
+        response = PostCreateAPIView.as_view()(request)
+        response.render()
+
+        # check status code
+        self.assertEqual(response.status_code, 400)
+
+        # decode content and check error message
+        content = json.loads(response.content.decode())
+        self.assertEqual(content, {'error': "'title' field not provided."})
+
+    def test_create_post_incomplete_data_no_body(self):
+
+        author = random.choice(self.authors)
+        data = self.data.copy()
+        data['token'] = Token.objects.get(user_id=author.user_id)
+        del data['body']
+
+        request = self.factory.post(self.url, data)
+
+        response = PostCreateAPIView.as_view()(request)
+        response.render()
+
+        # check status code
+        self.assertEqual(response.status_code, 400)
+
+        # decode content and check error message
+        content = json.loads(response.content.decode())
+        self.assertEqual(content, {'error': "'body' field not provided."})
