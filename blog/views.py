@@ -75,7 +75,7 @@ class PostCreateAPIView(APIView):
         except Exception as e:
             return Response({
                 'error': f'{str(e)} field not provided.'
-            })
+            }, status=400)
 
         token = request.POST.get('token')
 
