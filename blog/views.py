@@ -77,7 +77,7 @@ class PostCreateAPIView(APIView):
 
         if not token and not request.user.is_authenticated:
             return Response({
-                'error': 'You need to be authenticated to create a new tutorial.'
+                'error': 'You need to be authenticated to create a new post.'
             }, status=401)
 
         try:
