@@ -3,9 +3,9 @@ from django.contrib.auth import authenticate
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 
+from rest_framework.permissions import AllowAny
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView, Response
-from rest_framework.permissions import IsAdminUser, AllowAny
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 
