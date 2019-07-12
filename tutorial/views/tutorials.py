@@ -106,9 +106,9 @@ class TutorialCreateAPIView(APIView):
         try:
             title = request.POST['title']
             content = request.POST['content']
-            series_id = request.POST['series_id']
             draft = request.POST.get('draft', False)
             description = request.POST['description']
+            series_id = request.POST.get('series_id', None)
         except Exception as e:
             return Response({
                 'error': f'{str(e)} field not provided.'
@@ -130,6 +130,7 @@ class TutorialCreateAPIView(APIView):
 
             tutorial = Tutorial.objects.create(
                 title=title,
+                draft=draft,
                 content=content,
                 series_id=series_id,
                 author_id=author_id,
