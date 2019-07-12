@@ -10,10 +10,10 @@ SERIES_IDS = sorted([series_id[0] for series_id in Series.objects.values_list('i
 fake = faker.Faker()
 
 
-def create_tutorial(author_id: int = None) -> Tutorial:
+def create_tutorial(author_id: int = None, draft: bool = random.random() < 0.10) -> Tutorial:
     return Tutorial.objects.create(
+        draft=draft,
         description=fake.text(150),
-        draft=random.random() < 0.10,
         title=fake.text(50).title()[:-1],
         author_id=author_id if author_id else random.choice(AUTHOR_IDS),
         content='\n\n'.join([fake.sentence(170) for _ in range(random.randint(7, 10))]),
