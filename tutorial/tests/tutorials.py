@@ -145,3 +145,56 @@ class TutorialCreateTest(TestCase):
             slug__exact=slugify(self.data['title'])
         )).data
         self.assertEqual(content['details'], serialized_data)
+
+    def test_create_tutorial_without_authentication(self):
+
+        request = self.factory.post(self.url, self.data)
+        response = TutorialCreateAPIView.as_view()(request)
+        response.render()
+
+        # check status code
+        self.assertEqual(response.status_code, 401, msg=response.content.decode())
+
+        # decode content and check error message
+        content = json.loads(response.content.decode())
+        self.assertEqual(
+            content, {'error': 'You need to be authenticated to create a new tutorial.'}
+        )
+
+    def test_create_tutorial_incomplete_data_no_title(self):
+
+        data = self.data.copy()
+        author = random.choice(self.authors)
+        data['token'] = Token.objects.get(user_id=author.user_id)
+        del data['title']
+
+        request = self.factory.post(self.url, data)
+
+        response = TutorialCreateAPIView.as_view()(request)
+        response.render()
+
+        # check status code
+        self.assertEqual(response.status_code, 400)
+
+        # decode content and check error message
+        content = json.loads(response.content.decode())
+        self.assertEqual(content, {'error': "'title' field not provided."})
+
+    def test_create_tutorial_incomplete_data_no_content(self):
+
+        data = self.data.copy()
+        author = random.choice(self.authors)
+        data['token'] = Token.objects.get(user_id=author.user_id)
+        del data['content']
+
+        request = self.factory.post(self.url, data)
+
+        response = TutorialCreateAPIView.as_view()(request)
+        response.render()
+
+        # check status code
+        self.assertEqual(response.status_code, 400)
+
+        # decode content and check error message
+        content = json.loads(response.content.decode())
+        self.assertEqual(content, {'error': "'content' field not provided."})
