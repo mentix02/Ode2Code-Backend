@@ -21,7 +21,7 @@ from tutorial.serializers import (
 class RecentTutorialAPIView(ListAPIView):
     serializer_class = TutorialListSerializer
     pagination_class = RecentTutorialPaginator
-    queryset = Tutorial.objects.order_by('-pk')[:12]
+    queryset = Tutorial.objects.order_by('-timestamp')[:12]
 
 
 class TutorialDetailAPIView(RetrieveAPIView):
@@ -38,12 +38,6 @@ class TutorialLikeUnlikeAPIView(APIView):
     """
 
     parser_classes = (FormParser, MultiPartParser)
-
-    @staticmethod
-    def get(request):
-        return Response({
-            'detail': 'Method "GET" not allowed. Provide a token and a tutorial id number.'
-        }, status=405)
 
     @staticmethod
     def post(request):
