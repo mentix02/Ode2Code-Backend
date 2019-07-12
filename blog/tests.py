@@ -116,16 +116,17 @@ class PostCreateTest(TestCase):
 
     def test_create_post_with_token(self):
 
+        data = self.data.copy()
         author = random.choice(self.authors)
-        self.data['token'] = Token.objects.get(user_id=author.user_id).key,
+        data['token'] = Token.objects.get(user_id=author.user_id).key
 
-        request = self.factory.post(self.url, self.data)
+        request = self.factory.post(self.url, data)
 
         response = PostCreateAPIView.as_view()(request)
         response.render()
 
         # check status code
-        self.assertEqual(response.status_code, 201, msg=response.content.decode())
+        self.assertEqual(response.status_code, 201)
 
         # decode content and check serialized data
         content = json.loads(response.content.decode())
