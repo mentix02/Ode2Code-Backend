@@ -1,3 +1,4 @@
+import uuid
 import json
 import typing
 import random
@@ -31,6 +32,7 @@ from author.views import (
     AuthorListAPIView,
     AuthorDetailAPIView,
     AuthorPostListAPIView,
+    AuthenticateAuthorView,
     AuthorSeriesListAPIView,
     AuthorTutorialListAPIView,
     GetTokenAndAuthorDetailsAPIView
@@ -568,3 +570,49 @@ class AuthorContentListingTest(TestCase):
 
         self.assertEqual(author_2_tutorial_list_page_1['results'], author_2_tutorial_list_page_1_serialized_data)
         self.assertEqual(author_2_tutorial_list_page_2['results'], author_2_tutorial_list_page_2_serialized_data)
+
+
+class AuthorAuthenticateTest(TestCase):
+
+    def setUp(self):
+
+        self.author = create_author()
+
+        # create factory and set base url
+        self.factory = RequestFactory()
+        self.url = '/api/authors/authenticate'
+
+    def test_authenticate_author_view(self):
+
+        # make request
+        request = self.factory.get(f'{self.url}/{self.author.secret_key}')
+
+        # get response and render it
+        response = AuthenticateAuthorView.as_view()(request, self.author.secret_key.__str__())
+        response.render()
+
+        # perform actual test
+
+        # compare status code
+        self.assertEqual(response.status_code, 200)
+
+        # compare for authentication message
+        content = response.content.decode()
+        self.assertEqual(json.loads(content), {'authenticated': True})
+
+    def test_wrong_uuid_authentication(self):
+
+        # make wrong uuid
+        u = str(uuid.uuid4())
+
+        # make request
+        request = self.factory.get(f'{self.url}/{u}')
+
+        # get response and render it
+        response = AuthenticateAuthorView.as_view()(request, u)
+        response.render()
+
+        # perform actual test
+
+        # compare status code
+        self.assertEqual(response.status_code, 404)

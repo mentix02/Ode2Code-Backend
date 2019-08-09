@@ -24,6 +24,8 @@ class Author(models.Model):
     def authenticate(self):
         self.authenticated = True
         self.user.is_staff = True
+        # generate new key
+        self.secret_key = uuid.uuid4()
         self.user.save()
         self.save()
 
