@@ -4,6 +4,7 @@ from author.views import (
     AuthorListAPIView,
     AuthorDetailAPIView,
     AuthorPostListAPIView,
+    AuthenticateAuthorView,
     AuthorSeriesListAPIView,
     AuthorTutorialListAPIView,
     AuthorLikedTutorialIdsAPIView,
@@ -15,7 +16,6 @@ urlpatterns = (
 
     # for admin usage
     path('', AuthorListAPIView.as_view()),
-
     # for authentication purposes
     path('auth/', GetTokenAndAuthorDetailsAPIView.as_view()),
 
@@ -29,6 +29,9 @@ urlpatterns = (
     path('liked/tutorials/', AuthorLikedTutorialIdsAPIView.as_view()),
 
     # for author bookmarked models
-    path('bookmarked/series/', AuthorBookmarkedSeriesIdsAPIView.as_view())
+    path('bookmarked/series/', AuthorBookmarkedSeriesIdsAPIView.as_view()),
+
+    # to authenticate authors
+    path('authenticate/<uuid:uuid>/', AuthenticateAuthorView.as_view()),
 
 )
