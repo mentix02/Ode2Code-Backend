@@ -24,6 +24,21 @@ from tutorial.serializers import (
 )
 
 
+class AuthenticateAuthorView(APIView):
+    """
+    Gets an Author from the secret key
+    provided in the url to authenticate user.
+    """
+
+    @staticmethod
+    def get(request, uuid):
+        author = get_object_or_404(Author, secret_key__exact=uuid)
+        author.authenticate()
+        return Response({
+            'authenticated': True
+        })
+
+
 class GetTokenAndAuthorDetailsAPIView(APIView):
     """
     Takes in a POST request with form data
