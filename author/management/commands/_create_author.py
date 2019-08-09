@@ -9,6 +9,7 @@ from author.models import Author
 fake = faker.Faker()
 usernames = [username[0] for username in User.objects.values_list('username')]
 
+
 def generate_fake_username(username):
     if username in usernames:
         return generate_fake_username(fake.user_name())
