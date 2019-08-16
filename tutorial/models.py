@@ -20,7 +20,7 @@ class Series(models.Model):
         ('algorithms', 'Algorithms'),
         ('technology', 'Technology'),
         ('miscellaneous', 'Miscellaneous'),
-        ('data_structures', 'Data Structures'),
+        ('data-structures', 'Data Structures'),
     ]
 
     name = models.CharField(max_length=160)
