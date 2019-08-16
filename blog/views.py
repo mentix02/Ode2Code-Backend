@@ -65,9 +65,9 @@ class PostCreateAPIView(APIView):
         try:
             body = request.POST['body']
             title = request.POST['title']
-            thumbnail = request.POST['thumbnail']
             draft = request.POST.get('draft', False)
             description = request.POST['description']
+            thumbnail = request.POST.get('thumbnail', 'https://picsum.photos/id/1050/6000/4000')
         except Exception as e:
             return Response({
                 'error': f'{str(e)} field not provided.'
