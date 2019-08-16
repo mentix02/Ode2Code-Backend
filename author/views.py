@@ -3,11 +3,13 @@ from django.contrib.auth import authenticate
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 
-from rest_framework.permissions import AllowAny
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView, Response
+from drf_multiple_model.views import FlatMultipleModelAPIView
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from drf_multiple_model.pagination import MultipleModelLimitOffsetPagination
 
 from blog.models import Post
 from author.models import Author, Bookmark
@@ -267,3 +269,26 @@ class AuthorBookmarkedSeriesIdsAPIView(APIView):
             return Response({
                 'error': 'Invalid auth token provided.'
             }, status=401)
+
+
+class AuthorContentAPIView(FlatMultipleModelAPIView):
+    sorting_field = 'timestamp'
+    sorting_parameter_name = 'timestamp'
+    permission_classes = (IsAuthenticated,)
+    pagination_class = MultipleModelLimitOffsetPagination
+
+    def get_querylist(self):
+        return [
+            {
+                'serializer_class': PostListSerializer,
+                'queryset': Post.objects.filter(author__user=self.request.user),
+            },
+            {
+                'serializer_class': TutorialListSerializer,
+                'queryset': Tutorial.objects.filter(author__user=self.request.user),
+            },
+            {
+                'serializer_class': SeriesListSerializer,
+                'queryset': Series.objects.filter(creator__user=self.request.user),
+            }
+        ]
