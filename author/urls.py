@@ -3,6 +3,7 @@ from django.urls import path
 from author.views import (
     AuthorListAPIView,
     AuthorDetailAPIView,
+    AuthorContentAPIView,
     AuthorPostListAPIView,
     AuthenticateAuthorView,
     AuthorSeriesListAPIView,
@@ -33,5 +34,8 @@ urlpatterns = (
 
     # to authenticate authors
     path('authenticate/<uuid:uuid>/', AuthenticateAuthorView.as_view()),
+
+    # to get all content from author
+    path('content/', AuthorContentAPIView.as_view()),
 
 )
