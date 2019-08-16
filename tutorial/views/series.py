@@ -242,7 +242,7 @@ class SeriesTypeListAPIView(ListAPIView):
 
     def get_queryset(self):
         type_of_slug = self.kwargs['slug']
-        series = get_list_or_404(Series, type_of=type_of_slug)
+        series = Series.objects.filter(type_of=type_of_slug)
         return series
 
 
