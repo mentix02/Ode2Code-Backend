@@ -1,4 +1,5 @@
 from tutorial.models import Series
+from author.serializers import AuthorSerializer
 
 from rest_framework.serializers import (
     IntegerField,
@@ -30,7 +31,8 @@ class SeriesListSerializer(ModelSerializer):
 
 class SeriesDetailSerializer(ModelSerializer):
 
-    creator = StringRelatedField()
+    creator = AuthorSerializer()
+    timestamp = DateTimeField(format='%dth %b, %Y')
     tutorial_count = IntegerField(source='get_tutorial_count')
     # tutorials = HyperlinkedIdentityField(many=True,
     #                                      lookup_field='slug',
@@ -41,4 +43,4 @@ class SeriesDetailSerializer(ModelSerializer):
     class Meta:
 
         model = Series
-        fields = ('id', 'name', 'slug', 'creator', 'type_of', 'description', 'tutorial_count')
+        fields = ('id', 'name', 'slug', 'creator', 'type_of', 'description', 'tutorial_count', 'timestamp')
