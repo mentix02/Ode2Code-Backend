@@ -18,7 +18,7 @@ class Command(BaseCommand):
 
         try:
             User.objects.create_superuser(
-                password='aaaa',
+                password='aaa',
                 username='mentix02',
                 email='manan.yadav02@gmail.com'
             )
