@@ -1,13 +1,14 @@
-from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.generics import (
     ListAPIView,
-    RetrieveAPIView
+    DestroyAPIView,
+    RetrieveAPIView,
 )
 
 from tutorial.models import Tutorial
@@ -83,6 +84,21 @@ class TutorialLikeUnlikeAPIView(APIView):
             }, status=500)
 
 
+class TutorialDeleteAPIView(DestroyAPIView):
+    lookup_field = 'slug'
+    lookup_url_kwarg = 'slug'
+    permission_classes = (IsAuthenticated,)
+    serializer_class = TutorialListSerializer
+
+    def get_queryset(self):
+        return Tutorial.objects.filter(author__user=self.request.user)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({'deleted': True}, status=204)
+
+
 class TutorialCreateAPIView(APIView):
     """
     Creates a new tutorial if POST
@@ -146,45 +162,3 @@ class TutorialCreateAPIView(APIView):
             return Response({
                 'error': str(e)
             }, status=500)
-
-
-class TutorialDeleteAPIView(APIView):
-
-    @staticmethod
-    def post(request):
-
-        token = request.POST.get('token')
-        tutorial_id = request.POST.get('tutorial_id')
-
-        if not token:
-            return Response({
-                'error': "You are not authenticated to delete a tutorial."
-            }, status=401)
-        if not tutorial_id:
-            return Response({
-                'error': "Please provide a tutorial id to delete."
-            }, status=405)
-
-        tutorial = get_object_or_404(Tutorial, id=tutorial_id)
-
-        try:
-
-            if token:
-                author_id = Token.objects.get(key=token).user.author.id
-            else:
-                author_id = request.user.author.id
-
-            if tutorial.author.id == author_id or tutorial.author.user.is_superuser:
-                tutorial.delete()
-                return Response({
-                    'deleted': tutorial_id
-                }, status=204)
-            else:
-                return Response({
-                    'error': 'You are not authorized to delete this tutorial.'
-                }, status=401)
-
-        except Exception as e:
-            return Response({
-                'error': str(e)
-            }, status=405)
