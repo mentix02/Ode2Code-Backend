@@ -11,12 +11,12 @@ fake = faker.Faker()
 PHOTO_IDS = list({'741', '566', '973', '849', '885'})
 
 
-def create_post(author_id: int = None, draft: bool = random.random() < 0.10) -> Post:
+def create_post(author_id: int = None, draft: bool = None) -> Post:
 
     return Post.objects.create(
-        draft=draft,
         description=fake.text(150),
         title=fake.text(50).title()[:-1],
+        draft=random.random() < 0.10 if not draft else draft,
         author_id=author_id if author_id else random.choice(AUTHOR_IDS),
         body='\n\n'.join([fake.sentence(170) for _ in range(random.randint(7, 10))]),
         thumbnail=f'https://picsum.photos/1900/1080/?image={random.choice(PHOTO_IDS)}',

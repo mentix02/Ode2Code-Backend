@@ -27,10 +27,12 @@ class Command(BaseCommand):
             mentix02.first_name = 'Manan'
             mentix02.save()
 
-            Author.objects.create(
+            author = Author.objects.create(
                 user=mentix02,
                 bio='Author of Ode2Code. Wrote the backend and a ton of tutorials.'
             )
+
+            author.promote()
 
             print('done')
 
