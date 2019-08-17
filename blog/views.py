@@ -10,6 +10,7 @@ TODO write a view listing blog posts for authenticated
 
 """
 from django.utils.text import slugify
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
@@ -69,6 +70,7 @@ class PostDeleteAPIView(DestroyAPIView):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
+        return Response({'deleted': True}, status=204)
 
 
 class PostCreateAPIView(APIView):
