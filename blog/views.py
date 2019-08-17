@@ -9,13 +9,15 @@ TODO write a view listing blog posts for authenticated
      authentication will have to be covered much later.
 
 """
+from django.utils.text import slugify
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
 from rest_framework.authtoken.models import Token
 from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.generics import (
     ListAPIView,
+    DestroyAPIView,
     RetrieveAPIView,
 )
 
@@ -50,6 +52,25 @@ class PostDetailAPIView(RetrieveAPIView):
     queryset = Post.objects.filter(draft=False)
 
 
+class PostDeleteAPIView(DestroyAPIView):
+    """
+    Simply checks if the owner of the post
+    or an admin is requesting deletion and
+    deletes the provided instance derived from slug
+    """
+    lookup_field = 'slug'
+    lookup_url_kwarg = 'slug'
+    serializer_class = PostListSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        return Post.objects.filter(author__user=self.request.user)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+
+
 class PostCreateAPIView(APIView):
     """
     Provides an interface to create new
@@ -71,6 +92,13 @@ class PostCreateAPIView(APIView):
         except Exception as e:
             return Response({
                 'error': f'{str(e)} field not provided.'
+            }, status=400)
+
+        # check if post with same title exists
+        slugs = [slug[0] for slug in Post.objects.values_list('slug')]
+        if slugify(title) in slugs:
+            return Response({
+                'error': f'Post with title "{title}" already exists!'
             }, status=400)
 
         token = request.POST.get('token')
