@@ -2,6 +2,7 @@ from django.urls import path
 
 from tutorial.views.series import (
     SeriesListAPIView,
+    SeriesDeleteAPIView,
     SeriesDetailAPIView,
     SeriesCreateAPIView,
     SeriesBookmarkAPIView,
@@ -23,5 +24,6 @@ urlpatterns = (
     path('new/', SeriesCreateAPIView.as_view()),
     path('bookmark/', SeriesBookmarkAPIView.as_view()),
     path('is_available/', SeriesAvailabilityAPIView.as_view()),
+    path('delete/<slug:slug>/', SeriesDeleteAPIView.as_view()),
 
 )

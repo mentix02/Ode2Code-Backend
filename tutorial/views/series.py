@@ -8,9 +8,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework.authtoken.models import Token
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.generics import (
     ListAPIView,
+    DestroyAPIView,
     RetrieveAPIView,
 )
 
@@ -103,8 +105,8 @@ class SeriesCreateAPIView(APIView):
         try:
             name = request.POST['name']
             type_of = request.POST['type_of']
-            thumbnail = request.POST['thumbnail']
             description = request.POST['description']
+            thumbnail = request.POST.get('thumbnail', None)
         except Exception as e:
             return Response({
                 'error': f'{str(e)} field not provided.'
@@ -259,3 +261,18 @@ class SeriesNameAndIdListAPIView(APIView):
         series = Series.objects.all()
         data = SeriesNameAndIdSerializer(series, many=True).data
         return Response(data)
+
+
+class SeriesDeleteAPIView(DestroyAPIView):
+    lookup_field = 'slug'
+    lookup_url_kwarg = 'slug'
+    serializer_class = SeriesListSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        return Series.objects.filter(creator__user=self.request.user)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({'deleted': True}, status=204)
