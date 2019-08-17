@@ -272,8 +272,7 @@ class AuthorBookmarkedSeriesIdsAPIView(APIView):
 
 
 class AuthorContentAPIView(FlatMultipleModelAPIView):
-    sorting_field = 'timestamp'
-    sorting_parameter_name = 'timestamp'
+    sorting_field = '-timestamp'
     permission_classes = (IsAuthenticated,)
     pagination_class = MultipleModelLimitOffsetPagination
 
