@@ -144,6 +144,11 @@ class TutorialCreateAPIView(APIView):
             else:
                 author_id = request.user.author.id
 
+            try:
+                int(series_id)
+            except ValueError:
+                series_id = None
+
             tutorial = Tutorial.objects.create(
                 title=title,
                 draft=draft,
