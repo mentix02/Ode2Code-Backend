@@ -14,6 +14,7 @@ urlpatterns = (
 
     # CRUD operations on tutorials
     path('new/', TutorialCreateAPIView.as_view()),
-    path('delete/', TutorialDeleteAPIView.as_view()),
     path('like/', TutorialLikeUnlikeAPIView.as_view()),
+    path('delete/<slug:slug>/', TutorialDeleteAPIView.as_view()),
+
 )
